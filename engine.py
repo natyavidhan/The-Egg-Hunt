@@ -45,6 +45,7 @@ class Sprite:
         self.animations[name] = final_frames
         self.current_animation = name
         self.current_frame = 0
+        self.load(self.animations[self.current_animation][self.current_frame])
 
     def draw(self, screen, offset):
         if self.current_animation:
