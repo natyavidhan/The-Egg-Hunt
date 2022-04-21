@@ -5,12 +5,28 @@ class Scene:
         self.screen = screen
         self.background = pygame.image.load(background_image).convert_alpha() if background_image else None
         self.background_color = background_color
-        self.offset = (0, 0)
+        self.offset = [0, 0]
         self.entities = []
         self.game_map = _game_map
 
     def add_entity(self, ID, entity):
         self.entities.append({ID: entity})
+    
+    def scroll(self, player):
+        x, y = player.x, player.y
+        if x < self.screen.get_width()/2:
+            self.offset[0] = 0
+        elif x > self.game_map.width - self.screen.get_width()/2:
+            self.offset[0] = self.game_map.width - self.screen.get_width()
+        elif x > self.screen.get_width()/2:
+            self.offset[0] = x - self.screen.get_width()/2
+
+        if y > 0 and y < self.screen.get_height()/2:
+            self.offset[1] = 0
+        elif y > self.game_map.height - self.screen.get_height()/2:
+            self.offset[1] = self.game_map.height - self.screen.get_height()
+        elif y > self.screen.get_height()/2:
+            self.offset[1] = y - self.screen.get_height()/2
 
     def draw(self):
         self.screen.fill(self.background_color)
@@ -18,7 +34,7 @@ class Scene:
             self.screen.blit(self.background, self.offset)
         for i in self.game_map.game_map:
             x, y, tile = i
-            self.screen.blit(tile, (x, y, 32, 32))
+            self.screen.blit(tile, (x - self.offset[0], y - self.offset[1], 32, 32))
         for entity in self.entities:
             list(entity.values())[0].draw(self.screen, self.offset)
 
@@ -32,6 +48,7 @@ class Sprite:
         self.animations = {}
         self.current_animation = None
         self.current_frame = 0
+        self.origin = (0, 0)
 
     def load(self, image):
         self.render = pygame.transform.scale(image, (self.width, self.height))
@@ -53,8 +70,7 @@ class Sprite:
             self.current_frame += 1
             if self.current_frame >= len(self.animations[self.current_animation]):
                 self.current_frame = 0
-        rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        rect.move_ip(offset)
+        rect = pygame.Rect(self.x - offset[0] - self.origin[0], self.y - offset[1] - self.origin[1], self.width, self.height)
         screen.blit(self.render, rect)
 
 class SceneMap:
@@ -82,3 +98,6 @@ class SceneMap:
                     i=0
                     _x = 0
                     _y+=32
+
+        self.width = self.json_map["width"] * self.json_map["tilewidth"]
+        self.height = self.json_map["height"] * self.json_map["tileheight"]

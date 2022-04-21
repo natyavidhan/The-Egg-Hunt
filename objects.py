@@ -6,6 +6,7 @@ class Player(engine.Sprite):
         super().__init__(x, y, width, height, angle)
         self.direction = pygame.math.Vector2(0, 0)
         self.speed = 5
+        self.origin = (self.width//2, self.height//2)
     
     def move(self):
         keys = pygame.key.get_pressed()

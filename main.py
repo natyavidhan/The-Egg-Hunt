@@ -21,5 +21,6 @@ while RUNNING:
         if event.type == pygame.QUIT:
             RUNNING = False
     player.update()
+    level_1.scroll(player)
     level_1.draw()
     pygame.display.flip()
