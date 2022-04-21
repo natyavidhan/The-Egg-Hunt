@@ -1,20 +1,37 @@
-import pygame, math
+import pygame, math, os, json
 
 class Scene:
-    def __init__(self, screen, background_image=None, background_color=(20, 206, 215)):
+    def __init__(self, screen, _game_map = [], background_image=None, background_color=(20, 206, 215)):
         self.screen = screen
         self.background = pygame.image.load(background_image).convert_alpha() if background_image else None
         self.background_color = background_color
         self.offset = (0, 0)
         self.entities = []
+        _grass_tiles = os.listdir("assets/terrain")
+        self.grass_tiles = []
+        for i in _grass_tiles:
+            self.grass_tiles.append(pygame.image.load(f"assets/terrain/{i}"))
+        _x, _y = 0, 0
+        self.game_map = []
+        for y in _game_map:
+            for x in y:
+                if x != 0:
+                    tile = x-1
+                    self.game_map.append([_x, _y, tile])
+                _x+=32
+            _x=0
+            _y+=32
 
     def add_entity(self, ID, entity):
         self.entities.append({ID: entity})
-    
+
     def draw(self):
         self.screen.fill(self.background_color)
         if self.background:
             self.screen.blit(self.background, self.offset)
+        for i in self.game_map:
+            x, y, tile = i
+            self.screen.blit(self.grass_tiles[tile], (x, y, 32, 32))
         for entity in self.entities:
             list(entity.values())[0].draw(self.screen, self.offset)
 
@@ -41,7 +58,7 @@ class Sprite:
         self.animations[name] = final_frames
         self.current_animation = name
         self.current_frame = 0
-    
+
     def draw(self, screen, offset):
         if self.current_animation:
             self.load(self.animations[self.current_animation][self.current_frame])
@@ -51,4 +68,3 @@ class Sprite:
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
         rect.move_ip(offset)
         screen.blit(self.render, rect)
-        
