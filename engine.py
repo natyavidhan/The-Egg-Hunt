@@ -66,12 +66,15 @@ class SceneMap:
         for i in _grass_tiles:
             self.tiles.append(pygame.image.load(f"{tiles_directory}/{i}"))
 
+        self.rects = []
         self.game_map = []
+
         for layer in self.json_map["layers"]:
             _x, _y, i = 0, 0, 0
             for e in layer["data"]:
                 if e != 0:
                     self.game_map.append([_x, _y, self.tiles[e-1]])
+                    self.rects.append(pygame.Rect(_x, _y, 32, 32))
                 _x+=32
                 i+=1
                 if i > layer["width"]-1:

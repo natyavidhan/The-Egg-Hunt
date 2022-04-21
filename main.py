@@ -1,5 +1,5 @@
 import pygame, os, json
-import engine
+import engine, objects
 
 screen = pygame.display.set_mode((640, 480))
 pygame.display.set_caption("The Egg Hunt")
@@ -9,10 +9,9 @@ RUNNING = True
 
 game_map = engine.SceneMap("maps/level_1.json", "assets/terrain")
 level_1 = engine.Scene(screen, game_map)
-player = engine.Sprite(100, 100, 64, 64, 0)
-player.add_animation("idle", [os.path.join('assets', "chick 1.png")])
-player.add_animation("walk", [os.path.join('assets', "chick 1.png"), os.path.join('assets', "chick 2.png"),
-                            os.path.join('assets', "chick 3.png"), os.path.join('assets', "chick 2.png")])
+player = objects.Player(100, 100, 64, 64, 0)
+player.add_animation("idle", ["assets/chick 1.png"])
+player.add_animation("walk", ["assets/chick 1.png", "assets/chick 2.png", "assets/chick 3.png", "assets/chick 2.png"])
 player.current_animation = "idle"
 level_1.add_entity("player", player)
 
