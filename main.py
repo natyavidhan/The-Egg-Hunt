@@ -7,7 +7,7 @@ clock = pygame.time.Clock()
 RUNNING = True
 
 
-game_map = json.load(open("maps/level_1.json"))
+game_map = engine.SceneMap("maps/level_1.json", "assets/terrain")
 level_1 = engine.Scene(screen, game_map)
 player = engine.Sprite(100, 100, 64, 64, 0)
 player.add_animation("idle", [os.path.join('assets', "chick 1.png")])
