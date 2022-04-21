@@ -19,7 +19,7 @@ class Scene:
             list(entity.values())[0].draw(self.screen, self.offset)
 
 class Sprite:
-    def __init__(self, x, y, width, height, angle, image):
+    def __init__(self, x, y, width, height, angle):
         self.x = x
         self.y = y
         self.width = width
@@ -28,10 +28,6 @@ class Sprite:
         self.animations = {}
         self.current_animation = None
         self.current_frame = 0
-        
-        self.image = pygame.image.load(image).convert_alpha()
-        self.render = pygame.transform.scale(self.image, (self.width, self.height))
-        self.render = pygame.transform.rotate(self.render, self.angle)
 
     def load(self, image):
         self.render = pygame.transform.scale(image, (self.width, self.height))
