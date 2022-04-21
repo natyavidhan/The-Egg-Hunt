@@ -20,7 +20,7 @@ while RUNNING:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             RUNNING = False
-    player.update()
+    player.update(level_1)
     level_1.scroll(player)
     level_1.draw()
     pygame.display.flip()

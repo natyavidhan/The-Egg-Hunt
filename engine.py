@@ -49,9 +49,12 @@ class Sprite:
         self.current_animation = None
         self.current_frame = 0
         self.origin = (0, 0)
+        self.flipped = False
+        self.mirrored = False
 
     def load(self, image):
-        self.render = pygame.transform.scale(image, (self.width, self.height))
+        self.render = pygame.transform.flip(image, self.flipped, self.mirrored)
+        self.render = pygame.transform.scale(self.render, (self.width, self.height))
         self.render = pygame.transform.rotate(self.render, self.angle)
 
     def add_animation(self, name, frames, speed=6):
@@ -66,10 +69,10 @@ class Sprite:
 
     def draw(self, screen, offset):
         if self.current_animation:
-            self.load(self.animations[self.current_animation][self.current_frame])
-            self.current_frame += 1
             if self.current_frame >= len(self.animations[self.current_animation]):
                 self.current_frame = 0
+            self.load(self.animations[self.current_animation][self.current_frame])
+            self.current_frame += 1
         rect = pygame.Rect(self.x - offset[0] - self.origin[0], self.y - offset[1] - self.origin[1], self.width, self.height)
         screen.blit(self.render, rect)
 
