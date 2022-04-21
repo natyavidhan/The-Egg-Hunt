@@ -16,49 +16,43 @@ class Scene:
         if self.background:
             self.screen.blit(self.background, self.offset)
         for entity in self.entities:
-            entity.draw(self.screen, self.offset)
+            list(entity.values())[0].draw(self.screen, self.offset)
 
-class Entity:
-    def __init__(self, x, y, width, height, angle):
+class Sprite:
+    def __init__(self, x, y, width, height, angle, image):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.angle = angle
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.rect = pygame.transform.rotate(self.rect, self.angle)
+        self.animations = {}
+        self.current_animation = None
+        self.current_frame = 0
+        
+        self.image = pygame.image.load(image).convert_alpha()
+        self.render = pygame.transform.scale(self.image, (self.width, self.height))
+        self.render = pygame.transform.rotate(self.render, self.angle)
+
+    def load(self, image):
+        self.render = pygame.transform.scale(image, (self.width, self.height))
+        self.render = pygame.transform.rotate(self.render, self.angle)
+
+    def add_animation(self, name, frames, speed=6):
+        final_frames = []
+        for frame in frames:
+            for i in range(speed):
+                final_frames.append(pygame.image.load(frame).convert_alpha())
+        self.animations[name] = final_frames
+        self.current_animation = name
+        self.current_frame = 0
     
-    def update(self):
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.rect = pygame.transform.rotate(self.rect, self.angle)
-    
-    def return_rect(self, offset):
+    def draw(self, screen, offset):
+        if self.current_animation:
+            self.load(self.animations[self.current_animation][self.current_frame])
+            self.current_frame += 1
+            if self.current_frame >= len(self.animations[self.current_animation]):
+                self.current_frame = 0
         rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        rect = pygame.transform.rotate(self.rect, self.angle)
         rect.move_ip(offset)
-        return rect
-
-class Rectangle(Entity):
-    def __init__(self, x, y, width, height, angle, color=(0, 0, 0)):
-        super().__init__(x, y, width, height, angle)
-
-    def draw(self, screen, offset):
-        rect = self.return_rect(offset)
-        pygame.draw.rect(screen, self.color, rect)
-
-class Ellipse(Entity):
-    def __init__(self, x, y, width, height, angle, color=(0, 0, 0)):
-        super().__init__(x, y, width, height, angle)
-
-    def draw(self, screen, offset):
-        rect = self.return_rect(offset)
-        pygame.draw.ellipse(screen, self.color, rect)
-
-class Line(Entity):
-    def __init__(self, x, y, width, height, angle, color=(0, 0, 0)):
-        super().__init__(x, y, width, height, angle)
-
-    def draw(self, screen, offset):
-        rect = self.return_rect(offset)
-        pygame.draw.line(screen, self.color, (rect.x, rect.y), (rect.x + rect.width, rect.y + rect.height))
-
+        screen.blit(self.render, rect)
+        
