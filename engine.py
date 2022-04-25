@@ -1,4 +1,4 @@
-import pygame, math, os, json
+import pygame, math, os, json, pymunk
 
 class SceneMap:
     def __init__(self, map_json_file, tiles_directory):
@@ -18,7 +18,11 @@ class SceneMap:
             for e in layer["data"]:
                 if e != 0:
                     self.game_map.append([_x, _y, self.tiles[e-1]])
-                    self.rects.append(pygame.Rect(_x, _y, 32, 32))
+                    pos, size = [(_x+16, _y+16), (32, 32)]
+                    body = pymunk.Body(body_type=pymunk.Body.STATIC)
+                    body.position = pos
+                    shape = pymunk.Poly.create_box(body, size)
+                    self.rects.append(shape)
                 _x+=32
                 i+=1
                 if i > layer["width"]-1:
@@ -36,6 +40,8 @@ class Scene:
         self.offset = [0, 0]
         self.entities = []
         self.game_map = _game_map
+        self.space = pymunk.Space()
+        self.space.gravity = (0, 981)
 
     def add_entity(self, ID, entity):
         self.entities.append({ID: entity})
@@ -57,14 +63,28 @@ class Scene:
             self.offset[1] = y - self.screen.get_height()/2
 
     def draw(self):
+        self.space.step(1/60)
+        # for body in self.game_map.rects:
+        #     pymunk
+
         self.screen.fill(self.background_color)
         if self.background:
             self.screen.blit(self.background, self.offset)
+
         self.game_map.rects = []
         for i in self.game_map.game_map:
             x, y, tile = i
             self.screen.blit(tile, (x - self.offset[0], y - self.offset[1], 32, 32))
-            self.game_map.rects.append(pygame.Rect(x - self.offset[0], y - self.offset[1], 32, 32))
+            pos, size = [(x - self.offset[0], y - self.offset[1]), (32, 32)]
+            body = pymunk.Body(body_type=pymunk.Body.STATIC)
+            body.position = pos
+            shape = pymunk.Poly.create_box(body, size)
+            self.game_map.rects.append(shape)
+            
+        for body in self.game_map.rects:
+            x, y = body.body.position
+            pygame.draw.rect(self.screen, (255, 0, 0), (int(x), int(y), 32, 32), 1)
+
         for entity in self.entities:
             list(entity.values())[0].draw(self.screen, self.offset)
 
