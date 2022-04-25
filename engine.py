@@ -97,7 +97,10 @@ class Scene:
             pygame.draw.rect(self.screen, (255, 0, 0), (int(x), int(y), 32, 32), 1)
 
         for entity in self.entities:
-            list(entity.values())[0].draw(self.screen, self.offset)
+            entity = list(entity.values())[0]
+            if entity.body not in self.space.bodies:
+                self.space.add(entity.body, entity.shape)
+            entity.draw(self.screen, self.offset)
 
 
 class Sprite:
@@ -114,7 +117,7 @@ class Sprite:
         self.flipped = False
         self.mirrored = False
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.body = pymunk.Body(body_type=pymunk.Body.DYNAMIC)
+        self.body = pymunk.Body(3, 100, body_type=pymunk.Body.DYNAMIC)
         self.body.position = (self.x, self.y)
         self.shape = pymunk.Poly.create_box(self.body, (self.width, self.height))
 
@@ -139,8 +142,8 @@ class Sprite:
                 self.current_frame = 0
             self.load(self.animations[self.current_animation][self.current_frame])
             self.current_frame += 1
-        # self.x = int(self.body.position.x)
-        # self.y = int(self.body.position.y)
+        self.x = int(self.body.position.x)
+        self.y = int(self.body.position.y)
         self.rect = pygame.Rect(
             self.x - offset[0] - self.origin[0],
             self.y - offset[1] - self.origin[1],
