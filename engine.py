@@ -13,16 +13,18 @@ class SceneMap:
 
         self.bodies = []
         self.game_map = []
+        self.rects = []
 
         for layer in self.json_map["layers"]:
             _x, _y, i = 0, 0, 0
             for e in layer["data"]:
                 if e != 0:
                     self.game_map.append([_x, _y, self.tiles[e - 1]])
-                    pos, size = [(_x + 16, _y + 16), (32, 32)]
+                    pos, size = [(_x+16, _y+16), (32, 32)]
                     body = pymunk.Body(body_type=pymunk.Body.STATIC)
                     body.position = pos
                     self.bodies.append(body)
+                    self.rects.append(pygame.Rect(pos, size))
                 _x += 32
                 i += 1
                 if i > layer["width"] - 1:
@@ -97,6 +99,7 @@ class Scene:
             self.screen.blit(tile, (x - self.offset[0], y - self.offset[1], 32, 32))
             pos = (x - self.offset[0], y - self.offset[1])
             self.game_map.bodies[index].position = pos
+            self.game_map.rects[index].topleft = pos
             index += 1
 
 
@@ -169,9 +172,9 @@ class Sprite:
         )
 
     def debug(self, screen):
-        text = f"X: {self.x} Y: {self.y} Angle: {self.angle}"
+        text = f"""X: {self.x} Y: {self.y} Angle: {self.angle} Velocity: {self.body.velocity[0]} {round(self.body.velocity[1], 5)}"""
         screen.blit(
             pygame.font.SysFont("Arial", 20).render(text, True, (255, 255, 255)),
-            (self.rect.x, self.rect.y-25),
+            (self.rect.x, self.rect.y-50),
         )
         pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)
