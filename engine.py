@@ -1,7 +1,35 @@
 import pygame, math, os, json
 
+class SceneMap:
+    def __init__(self, map_json_file, tiles_directory):
+        self.json_map = json.load(open(map_json_file))
+        layers = {}
+
+        _grass_tiles = os.listdir(tiles_directory)
+        self.tiles = []
+        for i in _grass_tiles:
+            self.tiles.append(pygame.image.load(f"{tiles_directory}/{i}"))
+
+        self.rects = []
+        self.game_map = []
+
+        for layer in self.json_map["layers"]:
+            _x, _y, i = 0, 0, 0
+            for e in layer["data"]:
+                if e != 0:
+                    self.game_map.append([_x, _y, self.tiles[e-1]])
+                    self.rects.append(pygame.Rect(_x, _y, 32, 32))
+                _x+=32
+                i+=1
+                if i > layer["width"]-1:
+                    i=0
+                    _x = 0
+                    _y+=32
+
+        self.width = self.json_map["width"] * self.json_map["tilewidth"]
+        self.height = self.json_map["height"] * self.json_map["tileheight"]
 class Scene:
-    def __init__(self, screen, _game_map, background_image=None, background_color=(20, 206, 215)):
+    def __init__(self, screen, _game_map:SceneMap, background_image=None, background_color=(20, 206, 215)):
         self.screen = screen
         self.background = pygame.image.load(background_image).convert_alpha() if background_image else None
         self.background_color = background_color
@@ -32,9 +60,11 @@ class Scene:
         self.screen.fill(self.background_color)
         if self.background:
             self.screen.blit(self.background, self.offset)
+        self.game_map.rects = []
         for i in self.game_map.game_map:
             x, y, tile = i
             self.screen.blit(tile, (x - self.offset[0], y - self.offset[1], 32, 32))
+            self.game_map.rects.append(pygame.Rect(x - self.offset[0], y - self.offset[1], 32, 32))
         for entity in self.entities:
             list(entity.values())[0].draw(self.screen, self.offset)
 
@@ -51,6 +81,7 @@ class Sprite:
         self.origin = (0, 0)
         self.flipped = False
         self.mirrored = False
+        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
     def load(self, image):
         self.render = pygame.transform.flip(image, self.flipped, self.mirrored)
@@ -73,34 +104,4 @@ class Sprite:
                 self.current_frame = 0
             self.load(self.animations[self.current_animation][self.current_frame])
             self.current_frame += 1
-        rect = pygame.Rect(self.x - offset[0] - self.origin[0], self.y - offset[1] - self.origin[1], self.width, self.height)
-        screen.blit(self.render, rect)
-
-class SceneMap:
-    def __init__(self, map_json_file, tiles_directory):
-        self.json_map = json.load(open(map_json_file))
-        layers = {}
-
-        _grass_tiles = os.listdir(tiles_directory)
-        self.tiles = []
-        for i in _grass_tiles:
-            self.tiles.append(pygame.image.load(f"{tiles_directory}/{i}"))
-
-        self.rects = []
-        self.game_map = []
-
-        for layer in self.json_map["layers"]:
-            _x, _y, i = 0, 0, 0
-            for e in layer["data"]:
-                if e != 0:
-                    self.game_map.append([_x, _y, self.tiles[e-1]])
-                    self.rects.append(pygame.Rect(_x, _y, 32, 32))
-                _x+=32
-                i+=1
-                if i > layer["width"]-1:
-                    i=0
-                    _x = 0
-                    _y+=32
-
-        self.width = self.json_map["width"] * self.json_map["tilewidth"]
-        self.height = self.json_map["height"] * self.json_map["tileheight"]
+        self.rect = pygame.Rect(self.x - offset[0] - self.origin[0], self.y - offset[1] - self.origin[1], self.width, self.height)
