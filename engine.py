@@ -1,5 +1,5 @@
 import pygame, math, os, json, pymunk
-
+pygame.font.init()
 
 class SceneMap:
     def __init__(self, map_json_file, tiles_directory):
@@ -39,6 +39,7 @@ class Scene:
         self,
         screen,
         _game_map: SceneMap,
+        clock: pygame.time.Clock,
         background_image=None,
         background_color=(20, 206, 215),
     ):
@@ -57,6 +58,8 @@ class Scene:
         for body in self.game_map.bodies:
             shape = pymunk.Poly.create_box(body, (32, 32))
             self.space.add(body, shape)
+        self.DEBUG = False
+        self.clock = clock
 
     def add_entity(self, ID, entity):
         self.entities.append({ID: entity})
@@ -80,6 +83,10 @@ class Scene:
     def draw(self):
         self.space.step(1 / 60)
 
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_p]:
+            self.DEBUG = not self.DEBUG
+
         self.screen.fill(self.background_color)
         if self.background:
             self.screen.blit(self.background, self.offset)
@@ -92,15 +99,25 @@ class Scene:
             self.game_map.bodies[index].position = pos
             index += 1
 
-        for body in self.game_map.bodies:
-            x, y = body.position
-            pygame.draw.rect(self.screen, (255, 0, 0), (int(x), int(y), 32, 32), 1)
 
         for entity in self.entities:
             entity = list(entity.values())[0]
             if entity.body not in self.space.bodies:
                 self.space.add(entity.body, entity.shape)
             entity.draw(self.screen, self.offset)
+            if self.DEBUG:
+                entity.debug(self.screen)
+        
+        if self.DEBUG:
+            fps = round(self.clock.get_fps())
+            self.screen.blit(
+                pygame.font.SysFont("Arial", 20).render(f"FPS: {fps}", True, (255, 255, 255)),
+                (0, 0),
+            )
+            for body in self.game_map.bodies:
+                x, y = body.position
+                pygame.draw.rect(self.screen, (255, 0, 0), (int(x), int(y), 32, 32), 1)
+
 
 
 class Sprite:
@@ -150,3 +167,11 @@ class Sprite:
             self.width,
             self.height,
         )
+
+    def debug(self, screen):
+        text = f"X: {self.x} Y: {self.y} Angle: {self.angle}"
+        screen.blit(
+            pygame.font.SysFont("Arial", 20).render(text, True, (255, 255, 255)),
+            (self.rect.x, self.rect.y-25),
+        )
+        pygame.draw.rect(screen, (255, 0, 0), self.rect, 1)

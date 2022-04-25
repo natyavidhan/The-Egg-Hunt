@@ -8,7 +8,7 @@ RUNNING = True
 
 
 game_map = engine.SceneMap("maps/level_1.json", "assets/terrain")
-level_1 = engine.Scene(screen, game_map)
+level_1 = engine.Scene(screen, game_map, clock)
 player = objects.Player(100, 100, 64, 64, 0)
 player.add_animation("idle", ["assets/chick 1.png"])
 player.add_animation(

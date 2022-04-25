@@ -32,7 +32,8 @@ class Player(engine.Sprite):
         # self.direction.y += self.gravity
         tiles = scene.game_map.bodies
         player_rect = scene.entities[0]["player"].rect
-        pygame.draw.rect(scene.screen, (255, 0, 0), player_rect, 1)
+        # if scene.DEBUG:
+        #     pygame.draw.rect(scene.screen, (255, 0, 0), player_rect, 1)
 
         # self.x += self.direction.x * self.speed
         # self.y += self.direction.y
