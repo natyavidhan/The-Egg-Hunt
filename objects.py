@@ -29,7 +29,7 @@ class Player(engine.Sprite):
     def update(self, scene:engine.Scene):
         self.move()
         self.direction.y += self.gravity
-        tiles = scene.game_map.rects
+        tiles = scene.game_map.bodies
         player_rect = scene.entities[0]["player"].rect
         pygame.draw.rect(scene.screen, (255, 0, 0), player_rect, 1)
         

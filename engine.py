@@ -10,7 +10,7 @@ class SceneMap:
         for i in _grass_tiles:
             self.tiles.append(pygame.image.load(f"{tiles_directory}/{i}"))
 
-        self.rects = []
+        self.bodies = []
         self.game_map = []
 
         for layer in self.json_map["layers"]:
@@ -21,8 +21,7 @@ class SceneMap:
                     pos, size = [(_x+16, _y+16), (32, 32)]
                     body = pymunk.Body(body_type=pymunk.Body.STATIC)
                     body.position = pos
-                    shape = pymunk.Poly.create_box(body, size)
-                    self.rects.append(shape)
+                    self.bodies.append(body)
                 _x+=32
                 i+=1
                 if i > layer["width"]-1:
@@ -42,6 +41,9 @@ class Scene:
         self.game_map = _game_map
         self.space = pymunk.Space()
         self.space.gravity = (0, 981)
+        for body in self.game_map.bodies:
+            shape = pymunk.Poly.create_box(body, (32, 32))
+            self.space.add(body, shape)
 
     def add_entity(self, ID, entity):
         self.entities.append({ID: entity})
@@ -64,25 +66,21 @@ class Scene:
 
     def draw(self):
         self.space.step(1/60)
-        # for body in self.game_map.rects:
-        #     pymunk
 
         self.screen.fill(self.background_color)
         if self.background:
             self.screen.blit(self.background, self.offset)
 
-        self.game_map.rects = []
+        index = 0
         for i in self.game_map.game_map:
             x, y, tile = i
             self.screen.blit(tile, (x - self.offset[0], y - self.offset[1], 32, 32))
-            pos, size = [(x - self.offset[0], y - self.offset[1]), (32, 32)]
-            body = pymunk.Body(body_type=pymunk.Body.STATIC)
-            body.position = pos
-            shape = pymunk.Poly.create_box(body, size)
-            self.game_map.rects.append(shape)
-            
-        for body in self.game_map.rects:
-            x, y = body.body.position
+            pos = (x - self.offset[0], y - self.offset[1])
+            self.game_map.bodies[index].position = pos
+            index += 1
+
+        for body in self.game_map.bodies:
+            x, y = body.position
             pygame.draw.rect(self.screen, (255, 0, 0), (int(x), int(y), 32, 32), 1)
 
         for entity in self.entities:
@@ -102,6 +100,9 @@ class Sprite:
         self.flipped = False
         self.mirrored = False
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.body = pymunk.Body(body_type=pymunk.Body.DYNAMIC)
+        self.body.position = (self.x, self.y)
+        self.shape = pymunk.Poly.create_box(self.body, (self.width, self.height))
 
     def load(self, image):
         self.render = pygame.transform.flip(image, self.flipped, self.mirrored)
@@ -124,4 +125,6 @@ class Sprite:
                 self.current_frame = 0
             self.load(self.animations[self.current_animation][self.current_frame])
             self.current_frame += 1
+        # self.x = int(self.body.position.x)
+        # self.y = int(self.body.position.y)
         self.rect = pygame.Rect(self.x - offset[0] - self.origin[0], self.y - offset[1] - self.origin[1], self.width, self.height)
